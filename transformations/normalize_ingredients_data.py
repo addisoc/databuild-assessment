@@ -1,15 +1,16 @@
 import re
+import sys
 from configparser import ConfigParser
 
 import duckdb
 import pandas as pd
-import sys
-
 
 config = ConfigParser()
-if sys.argv[1] is None:
+if len(sys.argv) < 2:
+    print("Using default settings for normalization config.ini")
     config.read('config.ini')
 else:
+    print(f"Using custom configurations for normalization {sys.argv[1]}")
     config.read(sys.argv[1])
 
 raw_ingredients = config['data.name']['raw.ingredients.list']
@@ -21,6 +22,7 @@ raw_recipes = config['data.name']['raw.recipes.file']
 transformed_ingredients = config['data.location']['transformed.ingredients']
 ingredients_name = config['data.name']['raw.ingredients.list']
 
+print("Normalizing ingredients")
 # All ingredients
 reference_list = pd.read_json(f'{raw_folder}/{ingredients_name}').term.to_list()
 
@@ -32,7 +34,8 @@ df = pd.read_json(f'{raw_folder}/{raw_recipes}')[['id', 'ingredients']]
 db = duckdb.sql(
     "SELECT id, ingredients AS ingredient FROM (  SELECT id, UNNEST(ingredients) AS ingredients  FROM df) AS unnested")
 
-# normalize the data
+# normalize the data: regex using all the ingredients piped together and then uses DuckDb's extract() to pull out the
+# matches. There's no special logic so it will match Freshly Ground Black Pepper into Black Pepper
 words = r'\b(?:' + '|'.join(re.escape(word) for word in reference_list) + r')\b'
 query = f'''
 

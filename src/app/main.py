@@ -15,14 +15,18 @@ normalized_parquet = config['data.name']['transformed.ingredients.normalized']
 @dataclass
 class CoocurrenceIngredent:
     ingredient: str
-    coocurrence: dict
+    coocurrence: list[dict]
 
 
+# Endpoint to return the most commonly coocurrering ingredients
+# Returns an empty list if no ingredients are found
 @app.get("/v1/ingredients-cooccurrence/{ingredient}")
 async def root(ingredient: str, page: int = 0, limit: int = 10):
-    return CoocurrenceIngredent(ingredient, _query(ingredient=ingredient, page = page, limit = limit))
+    return CoocurrenceIngredent(ingredient, _query(ingredient=ingredient, page=page, limit=limit))
 
 
+# Would normally place this in a service but not sure in python where it goes... Queries the normalized dataset for
+# all recipes ids that contain the given ingredient, then adds up the ingredient counts
 def _query(ingredient: str, page, limit):
     df = f"{transformed_path}/{normalized_parquet}"
     query = f'''
