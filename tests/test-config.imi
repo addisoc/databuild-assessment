@@ -1,0 +1,8 @@
+[data.location]
+raw = ../../tests/data/raw
+transformed.ingredients = ../../tests/data/transformed/ingredients
+
+[data.name]
+raw.recipes.file = allrecipes.com_database_12042020000000.json
+raw.ingredients.list = ingredients_list.json
+transformed.ingredients.normalized = normalized_ingredients.parquet
